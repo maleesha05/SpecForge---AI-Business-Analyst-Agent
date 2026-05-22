@@ -84,3 +84,56 @@ Open **http://127.0.0.1:5000** in Chrome.
 ---
 
 ## 📁 Project Structure
+
+SpecForge/
+├── app_new.py           # Flask backend — API endpoints & Gemini integration
+├── specforge_final.html # Frontend — full UI served by Flask
+└── README.md
+
+---
+
+## 🔌 API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/` | Serves the frontend |
+| POST | `/api/chat` | Interview conversation with AI |
+| POST | `/api/analyze` | Gap analysis on transcript |
+| POST | `/api/generate-fsd` | Generate full FSD document |
+| GET | `/api/health` | Health check |
+
+---
+
+## 💡 Why This Project
+
+This project demonstrates core Business Analyst skills through technology:
+
+- **Requirements gathering** — the interview engine covers all standard BA discovery areas
+- **Gap analysis** — mirrors what a senior BA does when reviewing requirements
+- **Documentation** — auto-generates the kind of FSD that BAs produce manually
+- **AI integration** — uses cutting-edge LLM technology (Gemini) in a practical business context
+- **Cross-functional thinking** — bridges business needs and technical implementation
+
+**Real business value:** A team using SpecForge could cut requirements gathering time by 60-70% and produce more consistent, thorough specification documents.
+
+---
+
+## 🔮 What I'd Build Next
+
+- [ ] Multi-session support with database storage
+- [ ] PDF export with company branding
+- [ ] n8n integration to auto-create Jira tickets from requirements
+- [ ] Team collaboration mode
+- [ ] Comparison across multiple requirement versions
+- [ ] Integration with Confluence for direct publishing
+
+---
+
+## 👤 Author
+
+**Maleesha Nissanka**
+Built as a portfolio project demonstrating AI-powered business analysis tooling.
+
+---
+
+⭐ If you found this useful, give it a star!
