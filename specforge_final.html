@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpecForge — AI Business Analyst</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0a0a0f;color:#e8e8f0;font-family:'DM Sans',sans-serif;min-height:100vh}
+  .header{border-bottom:1px solid rgba(255,255,255,0.08);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(10,10,15,0.95);backdrop-filter:blur(20px);z-index:100}
+  .logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff}
+  .logo span{color:#6366f1}
+  .pills{display:flex;gap:8px}
+  .pill{padding:6px 16px;border-radius:999px;font-size:13px;border:1px solid rgba(255,255,255,0.08);color:#6b6b80}
+  .pill.active{border-color:#6366f1;color:#fff;background:rgba(99,102,241,0.1)}
+  .pill.done{border-color:rgba(34,197,94,0.3);color:#22c55e}
+  main{max-width:860px;margin:0 auto;padding:48px 24px}
+  /* INTRO */
+  .intro{text-align:center;min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}
+  .intro h1{font-family:'Syne',sans-serif;font-size:64px;font-weight:800;letter-spacing:-2px;line-height:1.05;background:linear-gradient(135deg,#fff,rgba(255,255,255,0.5));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .intro p{color:#6b6b80;font-size:18px;max-width:500px}
+  .input-row{display:flex;gap:12px;width:100%;max-width:500px}
+  .project-input{flex:1;background:#111118;border:1px solid rgba(255,255,255,0.08);color:#fff;padding:14px 20px;border-radius:12px;font-size:15px;outline:none;font-family:inherit}
+  .project-input:focus{border-color:#6366f1}
+  .project-input::placeholder{color:#6b6b80}
+  .btn{background:#6366f1;color:#fff;border:none;padding:14px 28px;border-radius:12px;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:all 0.2s;white-space:nowrap}
+  .btn:hover{background:#8b5cf6;transform:translateY(-1px)}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+  .features{display:flex;gap:24px;color:#6b6b80;font-size:14px}
+  /* INTERVIEW */
+  .interview{display:grid;grid-template-columns:260px 1fr;gap:24px;height:calc(100vh - 160px)}
+  .sidebar{display:flex;flex-direction:column;gap:16px}
+  .card{background:#111118;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:20px}
+  .card h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b6b80;margin-bottom:12px}
+  .proj-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#6366f1}
+  .progress-bar{height:6px;background:#1a1a24;border-radius:999px;overflow:hidden;margin-bottom:8px}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:999px;transition:width 0.5s}
+  .prog-label{font-size:13px;color:#6b6b80}
+  .tips{list-style:none;display:flex;flex-direction:column;gap:8px}
+  .tips li{font-size:13px;color:#6b6b80;padding-left:16px;position:relative}
+  .tips li::before{content:'→';position:absolute;left:0;color:#6366f1}
+  .chat-box{display:flex;flex-direction:column;background:#111118;border:1px solid rgba(255,255,255,0.08);border-radius:20px;overflow:hidden}
+  .messages{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 300px)}
+  .msg{display:flex;gap:12px;animation:fadeUp 0.3s ease}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .msg.user{flex-direction:row-reverse}
+  .avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;border:1px solid rgba(255,255,255,0.08);background:#1a1a24}
+  .msg.assistant .avatar{background:rgba(99,102,241,0.2);color:#6366f1;border-color:rgba(99,102,241,0.3)}
+  .bubble{max-width:70%;padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.6}
+  .msg.assistant .bubble{background:#1a1a24;border-radius:4px 16px 16px 16px}
+  .msg.user .bubble{background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.3);border-radius:16px 4px 16px 16px}
+  .typing{display:flex;gap:6px;align-items:center}
+  .typing span{width:8px;height:8px;background:#6b6b80;border-radius:50%;animation:bounce 1.2s infinite}
+  .typing span:nth-child(2){animation-delay:0.2s}
+  .typing span:nth-child(3){animation-delay:0.4s}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}
+  .input-bar{padding:16px 24px;border-top:1px solid rgba(255,255,255,0.08);display:flex;gap:12px}
+  .chat-input{flex:1;background:#1a1a24;border:1px solid rgba(255,255,255,0.08);color:#fff;padding:12px 16px;border-radius:12px;font-size:14px;outline:none;font-family:inherit}
+  .chat-input:focus{border-color:#6366f1}
+  .chat-input::placeholder{color:#6b6b80}
+  .complete-bar{padding:16px 24px;border-top:1px solid rgba(34,197,94,0.2);background:rgba(34,197,94,0.05);display:flex;align-items:center;gap:12px}
+  .complete-bar p{flex:1;color:#22c55e;font-size:14px}
+  /* LOADING */
+  .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;gap:20px;text-align:center}
+  .orb{width:64px;height:64px;border-radius:50%;background:conic-gradient(#6366f1,#8b5cf6,transparent,#6366f1);animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading h2{font-family:'Syne',sans-serif;font-size:24px;font-weight:700}
+  .loading p{color:#6b6b80}
+  /* GAP */
+  .gap-header{text-align:center;margin-bottom:40px}
+  .gap-header h2{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;letter-spacing:-1px;margin-bottom:8px}
+  .gap-header p{color:#6b6b80}
+  .gap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:32px}
+  .gap-card{background:#111118;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:20px}
+  .gap-card-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+  .gap-label{flex:1;font-family:'Syne',sans-serif;font-weight:700;font-size:14px}
+  .gap-count{background:#1a1a24;color:#6b6b80;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+  .gap-items{list-style:none;display:flex;flex-direction:column;gap:8px}
+  .gap-item{font-size:13px;color:#6b6b80;padding-left:14px;position:relative;line-height:1.5}
+  .gap-item::before{content:'•';position:absolute;left:0;color:#6366f1}
+  .gap-actions{display:flex;gap:16px;align-items:center}
+  .gap-note{flex:1;display:flex;gap:10px;background:#111118;border:1px solid rgba(255,255,255,0.08);padding:14px 18px;border-radius:12px;font-size:13px;color:#6b6b80}
+  .gen-btn{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;padding:14px 32px;border-radius:12px;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:all 0.2s}
+  .gen-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(99,102,241,0.3)}
+  /* FSD */
+  .fsd-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:16px}
+  .fsd-toolbar h2{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px}
+  .fsd-toolbar p{color:#6b6b80;font-size:13px}
+  .fsd-actions{display:flex;gap:10px}
+  .exp-btn{background:#6366f1;color:#fff;border:none;padding:10px 20px;border-radius:12px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all 0.2s}
+  .exp-btn:hover{opacity:0.85}
+  .exp-btn.sec{background:#111118;border:1px solid rgba(255,255,255,0.08);color:#6b6b80}
+  .fsd-section{background:#111118;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px;margin-bottom:16px}
+  .fsd-section h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.08)}
+  .fsd-section p,.fsd-section li{color:#6b6b80;line-height:1.8;font-size:14px}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .two-col h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b6b80;margin-bottom:12px}
+  .two-col ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+  .two-col li{padding-left:16px;position:relative}
+  .two-col li::before{content:'→';position:absolute;left:0;color:#6366f1;font-size:12px}
+  .req-card{background:#1a1a24;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;margin-bottom:12px}
+  .req-header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .req-id{font-family:monospace;font-size:12px;background:rgba(99,102,241,0.15);color:#6366f1;padding:3px 10px;border-radius:4px}
+  .req-title{flex:1;font-weight:600;font-size:14px;color:#e8e8f0}
+  .req-priority{font-size:12px;font-weight:700;text-transform:uppercase}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{text-align:left;padding:10px 16px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#6b6b80;border-bottom:1px solid rgba(255,255,255,0.08)}
+  td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.08);color:#6b6b80;vertical-align:top}
+  td strong{color:#e8e8f0}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><span>◈</span> SpecForge</div>
+  <div class="pills">
+    <div class="pill" id="pill1">1 Discover</div>
+    <div class="pill" id="pill2">2 Analyze</div>
+    <div class="pill" id="pill3">3 Generate</div>
+  </div>
+  <button class="btn" id="resetBtn" style="display:none;background:transparent;border:1px solid rgba(255,255,255,0.08);color:#6b6b80;padding:8px 16px;font-size:13px" onclick="reset()">↺ New Project</button>
+</header>
+
+<main>
+  <!-- INTRO -->
+  <div class="intro" id="introScreen">
+    <h1>Turn conversations<br>into specifications.</h1>
+    <p>AI agent that interviews clients, detects gaps, and generates a professional Functional Specification Document.</p>
+    <div class="input-row">
+      <input class="project-input" id="projectInput" placeholder="What's your project called?" onkeydown="if(event.key==='Enter')startInterview()">
+      <button class="btn" onclick="startInterview()">Start Interview →</button>
+    </div>
+    <div class="features">
+      <span>🎯 Smart follow-up questions</span>
+      <span>🔍 Gap analysis</span>
+      <span>📄 Professional FSD</span>
+    </div>
+  </div>
+
+  <!-- INTERVIEW -->
+  <div class="interview hidden" id="interviewScreen">
+    <div class="sidebar">
+      <div class="card">
+        <h3>📋 Project</h3>
+        <div class="proj-name" id="projNameDisplay"></div>
+      </div>
+      <div class="card">
+        <h3>📊 Progress</h3>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        <div class="prog-label" id="progressLabel">0 / ~10 questions</div>
+      </div>
+      <div class="card">
+        <h3>💡 Tips</h3>
+        <ul class="tips">
+          <li>Be specific and detailed</li>
+          <li>Mention your target users</li>
+          <li>Describe the problem clearly</li>
+          <li>Think about constraints</li>
+        </ul>
+      </div>
+    </div>
+    <div class="chat-box">
+      <div class="messages" id="messages"></div>
+      <div class="input-bar" id="inputBar">
+        <input class="chat-input" id="chatInput" placeholder="Type your answer..." onkeydown="if(event.key==='Enter')sendMessage()">
+        <button class="btn" onclick="sendMessage()">Send →</button>
+      </div>
+      <div class="complete-bar hidden" id="completeBar">
+        <p>✅ Interview complete! Ready to analyze.</p>
+        <button class="btn" onclick="analyzeRequirements()">Analyze Requirements →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading hidden" id="loadingScreen">
+    <div class="orb"></div>
+    <h2 id="loadingTitle">Processing...</h2>
+    <p id="loadingSubtitle">Please wait</p>
+  </div>
+
+  <!-- GAP ANALYSIS -->
+  <div class="hidden" id="gapScreen">
+    <div class="gap-header">
+      <h2>Gap Analysis Report</h2>
+      <p id="gapSummary"></p>
+    </div>
+    <div class="gap-grid" id="gapGrid"></div>
+    <div class="gap-actions">
+      <div class="gap-note"><span>ℹ️</span><span>These gaps will be flagged in your FSD as open questions.</span></div>
+      <button class="gen-btn" onclick="generateFSD()">Generate Functional Spec →</button>
+    </div>
+  </div>
+
+  <!-- FSD -->
+  <div class="hidden" id="fsdScreen">
+    <div class="fsd-toolbar">
+      <div>
+        <h2 id="fsdTitle"></h2>
+        <p id="fsdMeta"></p>
+      </div>
+      <div class="fsd-actions">
+        <button class="exp-btn sec" onclick="exportJSON()">↓ JSON</button>
+        <button class="exp-btn" onclick="exportMarkdown()">↓ Export Markdown</button>
+      </div>
+    </div>
+    <div id="fsdBody"></div>
+  </div>
+</main>
+
+<script>
+const API = '';
+let messages = [];
+let transcript = '';
+let gapAnalysis = {};
+let fsdData = {};
+let projectName = '';
+let questionCount = 0;
+
+function show(id) {
+  ['introScreen','interviewScreen','loadingScreen','gapScreen','fsdScreen'].forEach(s => {
+    document.getElementById(s).classList.add('hidden');
+  });
+  document.getElementById(id).classList.remove('hidden');
+}
+
+function setPills(stage) {
+  document.getElementById('pill1').className = 'pill' + (stage >= 1 ? (stage > 1 ? ' done' : ' active') : '');
+  document.getElementById('pill2').className = 'pill' + (stage >= 2 ? (stage > 2 ? ' done' : ' active') : '');
+  document.getElementById('pill3').className = 'pill' + (stage >= 3 ? ' active' : '');
+}
+
+async function startInterview() {
+  projectName = document.getElementById('projectInput').value.trim();
+  if (!projectName) return;
+  document.getElementById('projNameDisplay').textContent = projectName;
+  document.getElementById('resetBtn').style.display = 'block';
+  show('interviewScreen');
+  setPills(1);
+  setLoading(true);
+  const userMsg = {role:'user', content:`I want to build a project called "${projectName}". Please start the requirements discovery interview.`};
+  messages = [userMsg];
+  const reply = await callChat(messages);
+  addMessage('assistant', reply.reply);
+  if (reply.is_complete) showComplete();
+  setLoading(false);
+}
+
+function setLoading(on) {
+  const btn = document.querySelector('#inputBar button');
+  const inp = document.getElementById('chatInput');
+  if (btn) btn.disabled = on;
+  if (inp) inp.disabled = on;
+  if (on) {
+    const d = document.createElement('div');
+    d.className = 'msg assistant';
+    d.id = 'typingMsg';
+    d.innerHTML = '<div class="avatar">◈</div><div class="bubble typing"><span></span><span></span><span></span></div>';
+    document.getElementById('messages').appendChild(d);
+    scrollBottom();
+  } else {
+    const t = document.getElementById('typingMsg');
+    if (t) t.remove();
+  }
+}
+
+function addMessage(role, content) {
+  const msgs = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className = `msg ${role}`;
+  d.innerHTML = `<div class="avatar">${role === 'assistant' ? '◈' : 'You'}</div><div class="bubble">${content}</div>`;
+  msgs.appendChild(d);
+  scrollBottom();
+  if (role !== 'assistant' || messages.length > 1) {
+    questionCount = messages.filter(m => m.role === 'user').length;
+    const pct = Math.min(questionCount / 10 * 100, 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = `${questionCount} / ~10 questions`;
+  }
+}
+
+function scrollBottom() {
+  const m = document.getElementById('messages');
+  m.scrollTop = m.scrollHeight;
+}
+
+function showComplete() {
+  document.getElementById('inputBar').classList.add('hidden');
+  document.getElementById('completeBar').classList.remove('hidden');
+}
+
+async function sendMessage() {
+  const inp = document.getElementById('chatInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  const userMsg = {role:'user', content:text};
+  messages.push(userMsg);
+  addMessage('user', text);
+  setLoading(true);
+  const reply = await callChat(messages);
+  messages.push({role:'assistant', content:reply.reply});
+  addMessage('assistant', reply.reply);
+  if (reply.is_complete) showComplete();
+  setLoading(false);
+}
+
+async function callChat(msgs) {
+  try {
+    const r = await fetch(`${API}/api/chat`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({messages:msgs})});
+    return await r.json();
+  } catch(e) {
+    return {reply:'Error connecting to backend. Make sure python app-2.py is running.', is_complete:false};
+  }
+}
+
+async function analyzeRequirements() {
+  transcript = messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
+  show('loadingScreen');
+  document.getElementById('loadingTitle').textContent = 'Analyzing requirements...';
+  document.getElementById('loadingSubtitle').textContent = 'Identifying gaps, ambiguities, and risks';
+  setPills(2);
+  try {
+    const r = await fetch(`${API}/api/analyze`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({transcript})});
+    gapAnalysis = await r.json();
+    renderGapAnalysis();
+    show('gapScreen');
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+function renderGapAnalysis() {
+  const sections = [
+    {key:'missing', label:'Missing Information', icon:'❓'},
+    {key:'ambiguities', label:'Ambiguities', icon:'🔀'},
+    {key:'contradictions', label:'Contradictions', icon:'⚡'},
+    {key:'risks', label:'Risks', icon:'⚠️'},
+    {key:'assumptions', label:'Assumptions', icon:'💭'}
+  ];
+  let total = 0;
+  const grid = document.getElementById('gapGrid');
+  grid.innerHTML = '';
+  sections.forEach(s => {
+    const items = gapAnalysis[s.key] || [];
+    total += items.length;
+    const card = document.createElement('div');
+    card.className = 'gap-card';
+    card.innerHTML = `
+      <div class="gap-card-header">
+        <span>${s.icon}</span>
+        <span class="gap-label">${s.label}</span>
+        <span class="gap-count">${items.length}</span>
+      </div>
+      <ul class="gap-items">${items.length === 0 ? '<li class="gap-item" style="padding-left:0">None identified ✓</li>' : items.map(i => `<li class="gap-item">${i}</li>`).join('')}</ul>
+    `;
+    grid.appendChild(card);
+  });
+  document.getElementById('gapSummary').textContent = `Found ${total} items to address before generating your specification`;
+}
+
+async function generateFSD() {
+  show('loadingScreen');
+  document.getElementById('loadingTitle').textContent = 'Generating your FSD...';
+  document.getElementById('loadingSubtitle').textContent = 'Crafting a professional Functional Specification Document';
+  setPills(3);
+  try {
+    const r = await fetch(`${API}/api/generate-fsd`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({transcript, gap_analysis:gapAnalysis})});
+    fsdData = await r.json();
+    renderFSD();
+    show('fsdScreen');
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+function renderFSD() {
+  document.getElementById('fsdTitle').textContent = fsdData.project_title || projectName;
+  document.getElementById('fsdMeta').textContent = `Version ${fsdData.version || '1.0'} · ${fsdData.date || new Date().toLocaleDateString()}`;
+  const body = document.getElementById('fsdBody');
+  body.innerHTML = '';
+  const add = (html) => { body.innerHTML += html; };
+
+  if (fsdData.executive_summary) add(`<div class="fsd-section"><h3>Executive Summary</h3><p>${fsdData.executive_summary}</p></div>`);
+
+  if (fsdData.project_overview) {
+    const o = fsdData.project_overview;
+    add(`<div class="fsd-section"><h3>Project Overview</h3><div class="two-col">
+      <div><h4>Background</h4><p>${o.background||''}</p></div>
+      <div><h4>Problem Statement</h4><p>${o.problem_statement||''}</p></div>
+    </div><div style="margin-top:20px"><h4 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6b6b80;margin-bottom:8px">Proposed Solution</h4><p style="color:#6b6b80;font-size:14px">${o.proposed_solution||''}</p></div></div>`);
+  }
+
+  if (fsdData.goals_and_objectives) {
+    const g = fsdData.goals_and_objectives;
+    add(`<div class="fsd-section"><h3>Goals & Objectives</h3><div class="two-col">
+      <div><h4>Primary Goals</h4><ul>${(g.primary_goals||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
+      <div><h4>Success Metrics</h4><ul>${(g.success_metrics||[]).map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    </div></div>`);
+  }
+
+  if (fsdData.scope) {
+    add(`<div class="fsd-section"><h3>Scope</h3><div class="two-col">
+      <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.15);padding:16px;border-radius:12px">
+        <h4 style="margin-bottom:12px;color:#e8e8f0">✅ In Scope</h4>
+        <ul>${(fsdData.scope.in_scope||[]).map(x=>`<li>${x}</li>`).join('')}</ul>
+      </div>
+      <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15);padding:16px;border-radius:12px">
+        <h4 style="margin-bottom:12px;color:#e8e8f0">❌ Out of Scope</h4>
+        <ul>${(fsdData.scope.out_of_scope||[]).map(x=>`<li>${x}</li>`).join('')}</ul>
+      </div>
+    </div></div>`);
+  }
+
+  if (fsdData.functional_requirements?.length) {
+    const colors = {High:'#ef4444',Medium:'#f59e0b',Low:'#22c55e'};
+    add(`<div class="fsd-section"><h3>Functional Requirements</h3>${fsdData.functional_requirements.map(r=>`
+      <div class="req-card">
+        <div class="req-header">
+          <span class="req-id">${r.id}</span>
+          <span class="req-title">${r.title}</span>
+          <span class="req-priority" style="color:${colors[r.priority]||'#888'}">${r.priority}</span>
+        </div>
+        <p style="color:#6b6b80;font-size:13px;margin-bottom:8px">${r.description}</p>
+        ${r.acceptance_criteria?.length ? `<div style="font-size:13px"><strong style="color:#6b6b80">Acceptance Criteria:</strong><ul style="list-style:none;margin-top:6px">${r.acceptance_criteria.map(a=>`<li style="color:#6b6b80;padding-left:16px;position:relative"><span style="position:absolute;left:0;color:#22c55e">✓</span>${a}</li>`).join('')}</ul></div>` : ''}
+      </div>`).join('')}</div>`);
+  }
+
+  if (fsdData.stakeholders?.length) {
+    add(`<div class="fsd-section"><h3>Stakeholders</h3><table><thead><tr><th>Role</th><th>Responsibilities</th><th>Impact</th></tr></thead><tbody>
+      ${fsdData.stakeholders.map(s=>`<tr><td><strong>${s.role}</strong></td><td>${s.responsibilities}</td><td>${s.impact}</td></tr>`).join('')}
+    </tbody></table></div>`);
+  }
+
+  if (fsdData.open_questions?.length) {
+    add(`<div class="fsd-section" style="border-color:rgba(245,158,11,0.3)"><h3>⚠️ Open Questions</h3><ul style="list-style:none">${fsdData.open_questions.map(q=>`<li style="color:#6b6b80;font-size:14px;padding-left:20px;position:relative;margin-bottom:8px"><span style="position:absolute;left:0;color:#f59e0b;font-weight:700">?</span>${q}</li>`).join('')}</ul></div>`);
+  }
+
+  if (fsdData.recommended_next_steps?.length) {
+    add(`<div class="fsd-section"><h3>🚀 Recommended Next Steps</h3><ol style="list-style:none">${fsdData.recommended_next_steps.map((s,i)=>`<li style="color:#6b6b80;font-size:14px;padding-left:36px;position:relative;margin-bottom:10px"><span style="position:absolute;left:0;width:24px;height:24px;background:rgba(99,102,241,0.2);color:#6366f1;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${i+1}</span>${s}</li>`).join('')}</ol></div>`);
+  }
+}
+
+function exportMarkdown() {
+  let md = `# ${fsdData.project_title}\n\n**Version:** ${fsdData.version} | **Date:** ${fsdData.date}\n\n## Executive Summary\n${fsdData.executive_summary}\n\n`;
+  if (fsdData.functional_requirements) {
+    md += `## Functional Requirements\n\n`;
+    fsdData.functional_requirements.forEach(r => { md += `### ${r.id}: ${r.title} [${r.priority}]\n${r.description}\n\n`; });
+  }
+  if (fsdData.open_questions?.length) { md += `## Open Questions\n`; fsdData.open_questions.forEach(q => md += `- ${q}\n`); }
+  const blob = new Blob([md], {type:'text/markdown'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `${projectName.replace(/\s+/g,'_')}_FSD.md`; a.click();
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(fsdData,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `${projectName.replace(/\s+/g,'_')}_FSD.json`; a.click();
+}
+
+function reset() {
+  messages=[]; transcript=''; gapAnalysis={}; fsdData={}; projectName=''; questionCount=0;
+  document.getElementById('projectInput').value='';
+  document.getElementById('messages').innerHTML='';
+  document.getElementById('inputBar').classList.remove('hidden');
+  document.getElementById('completeBar').classList.add('hidden');
+  document.getElementById('resetBtn').style.display='none';
+  setPills(0); show('introScreen');
+}
+</script>
+</body>
+</html>
